@@ -86,13 +86,14 @@
     <button onclick="generateRangeInputs()">Ангиллын талбар үүсгэх</button>
     <div id="rangeInputs"></div>
 
+    <button id="calculateBtn" onclick="generateReceipt()" disabled>Бодох</button>
+    <button onclick="window.print()">Хэвлэх</button>
+    <button onclick="resetForm()">Цэвэрлэх</button>
+
     <h3>Тусгай төрөл</h3>
     <button onclick="showSection('dealSection')">!! Үнэ тохиролцсон !!</button>
     <button onclick="showSection('advanceSection')">!! Урьдчилгаа өгсөн !!</button>
 
-    <button id="calculateBtn" onclick="generateReceipt()" disabled>Бодох</button>
-    <button onclick="window.print()">Хэвлэх</button>
-    <button onclick="resetForm()">Цэвэрлэх</button>
     <div id="resultArea"></div>
   </div>
 
@@ -255,7 +256,7 @@
             break;
           }
         }
-      });
+      });      
 
       ranges.forEach((r) => {
         if (r.count > 0) {
@@ -308,4 +309,3 @@
   </script>
 </body>
 </html>
-
