@@ -246,8 +246,8 @@
       weights.forEach(w => {
         totalWeight += w;
         for (const r of ranges) {
-          if ((r.type === 'lt' && w < r.start) ||
-              (r.type === 'gt' && w > r.start) ||
+          if ((r.type === 'lt' && w <= r.start) ||
+              (r.type === 'gt' && w >= r.start) ||
               (r.type === 'bt' && w >= r.start && w <= r.end)) {
             r.total += w;
             r.count += 1;
@@ -308,3 +308,4 @@
   </script>
 </body>
 </html>
+
