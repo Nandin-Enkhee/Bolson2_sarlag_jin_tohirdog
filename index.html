@@ -149,7 +149,9 @@ function generateReceipt(){
     let totalWeight=0;
     let totalSum=0;
     let details='';
-    const allWeights=weights.map(w=>w.toFixed(2)).join(', ');
+
+    // Жинүүдийг .00-гүйгээр харуулах
+    const allWeights=weights.map(w => w % 1 === 0 ? w : w.toFixed(2)).join(', ');
 
     ranges.forEach(r=>{r.total=0;r.count=0;});
 
@@ -170,9 +172,13 @@ function generateReceipt(){
             let label=r.type==='lt'?`${r.start} кг-аас доош`
                      :r.type==='gt'?`${r.start} кг-аас дээш`
                      :`${r.start}-${r.end} кг`;
-            details+=`<p><strong>${label}:</strong> ${r.total.toFixed(2)} кг × ${r.price} ₮ = ${(r.total*r.price).toLocaleString()} ₮ (<strong>${r.count}</strong> сарлаг)</p>`;
+            const rTotal = r.total % 1 === 0 ? r.total : r.total.toFixed(2);
+            details+=`<p><strong>${label}:</strong> ${rTotal} кг × ${r.price} ₮ = ${(r.total*r.price).toLocaleString()} ₮ (<strong>${r.count}</strong> сарлаг)</p>`;
         }
     });
+
+    const displayTotalWeight = totalWeight % 1 === 0 ? totalWeight : totalWeight.toFixed(2);
+    const displayTotalSum = totalSum % 1 === 0 ? totalSum : totalSum.toFixed(2);
 
     const receiptHTML = ['Малчинд олгох', 'Компанид үлдэх'].map(title => `
     <div class="receipt">
@@ -190,10 +196,10 @@ function generateReceipt(){
       <p><strong>Сарлагны тоо:</strong> ${weights.length}</p>
       <p><strong>Жингүүд:</strong> ${allWeights} кг</p>
       ${details}
-      <p><strong>Нийт жин:</strong> ${totalWeight.toFixed(2)} кг</p>
-      <p><strong>Нийт дүн:</strong> ${totalSum.toLocaleString()} ₮</p>
+      <p><strong>Нийт жин:</strong> ${displayTotalWeight} кг</p>
+      <p><strong>Нийт дүн:</strong> ${displayTotalSum.toLocaleString()} ₮</p>
       <div class="signature">
-        <p>Малчны гарын үсэг: ________________________________</p>
+        <p>Малчны гарын үсэг: _________________________________</p>
         <p>Хүлээн авсан: Эмээлт Эрдэнэ Трейд ХХК</p>
       </div>
       <div class="page-break"></div>
@@ -207,8 +213,8 @@ function generateReceipt(){
         date, herder, account, phone,
         weights: allWeights,
         count: weights.length,
-        totalWeight: totalWeight.toFixed(2),
-        totalSum: totalSum.toFixed(2),
+        totalWeight: displayTotalWeight,
+        totalSum: displayTotalSum,
         ranges
     };
 
@@ -219,4 +225,3 @@ function resetForm(){ location.reload(); }
 </script>
 </body>
 </html>
-
