@@ -1,311 +1,221 @@
 <!DOCTYPE html>
 <html lang="mn">
 <head>
-  <meta charset="UTF-8">
-  <title>Сарлаг бүртгэл</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <style>
-    body {
-      font-family: "Segoe UI", sans-serif;
-      background-color: #f8fafc;
-      padding: 20px;
-      margin: 0;
-      color: #1e293b;
-    }
-    .container {
-      max-width: 720px;
-      margin: auto;
-      background: #ffffff;
-      padding: 24px;
-      border-radius: 16px;
-      border: 1px solid #e2e8f0;
-      box-shadow: 0 4px 10px rgba(0,0,0,0.05);
-    }
-    h2, h3, h4 {
-      text-align: center;
-      color: #6f4e37;
-    }
-    input, button, select {
-      width: 100%;
-      padding: 12px;
-      margin: 10px 0;
-      border-radius: 8px;
-      border: 1px solid #e2e8f0;
-      font-size: 16px;
-    }
-    button {
-      background-color: #6f4e37;
-      color: white;
-      font-weight: bold;
-      cursor: pointer;
-    }
-    .hidden { display: none; }
-    .receipt {
-      border: 1px solid #e2e8f0;
-      padding: 16px;
-      margin-top: 20px;
-    }
-    @media print {
-      input, button, h2, h3, h4, select {
-        display: none !important;
-      }
-      body {
-        background: white;
-        margin: 0;
-      }
-      .container {
-        padding: 0;
-        box-shadow: none;
-        border: none;
-        max-width: 100%;
-      }
-      .receipt {
-        border: none;
-        page-break-inside: avoid;
-        margin: 0;
-      }
-      @page {
-        margin: 5mm;
-      }
-    }
-  </style>
+<meta charset="UTF-8">
+<title>Сарлаг бүртгэл</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<style>
+body { font-family: "Segoe UI", sans-serif; background-color: #f8fafc; padding: 20px; margin: 0; color: #1e293b;}
+.container { max-width: 720px; margin: auto; background: #fff; padding: 24px; border-radius: 16px; border: 1px solid #e2e8f0; box-shadow: 0 4px 10px rgba(0,0,0,0.05);}
+h2,h3,h4{text-align:center;color:#6f4e37;}
+input,button,select{width:100%;padding:12px;margin:10px 0;border-radius:8px;border:1px solid #e2e8f0;font-size:16px;}
+button{background-color:#6f4e37;color:white;font-weight:bold;cursor:pointer;}
+.hidden{display:none;}
+.receipt{border:1px solid #e2e8f0;padding:16px;margin-top:20px;}
+.signature{margin-top:40px;}
+.page-break{page-break-after:always;}
+@media print {
+  input,button,h2,h3,h4,select{display:none !important;}
+  body{background:white;margin:0;}
+  .container{padding:0;box-shadow:none;border:none;max-width:100%;}
+  .receipt{border:none;page-break-inside:avoid;margin:0;}
+  @page{margin:5mm;}
+}
+</style>
 </head>
 <body>
-  <div class="container" id="mainForm">
-    <h2>Сарлагны бүртгэлийн систем</h2>
-    <input type="date" id="date">
-    <input type="text" id="herder" placeholder="Малчны нэр">
-    <input type="text" id="account" placeholder="Дансны дугаар">
-    <input type="text" id="phone" placeholder="Утасны дугаар">
-    <input type="number" id="horseCount" placeholder="Сарлагны тоо">
-    <button onclick="generateWeightFields()">Жингийн талбарууд үүсгэх</button>
-    <div id="weightFields"></div>
+<div class="container" id="mainForm">
+<h2>Сарлагны бүртгэлийн систем</h2>
+<input type="date" id="date">
+<input type="text" id="herder" placeholder="Малчны нэр">
+<input type="text" id="account" placeholder="Дансны дугаар">
+<input type="text" id="phone" placeholder="Утасны дугаар">
+<input type="number" id="horseCount" placeholder="Сарлагны тоо">
+<button onclick="generateWeightFields()">Жингийн талбарууд үүсгэх</button>
+<div id="weightFields"></div>
 
-    <h3>Жингийн ангиллуудыг үүсгэх</h3>
-    <input type="number" id="rangeCount" placeholder="Жингийн ангиллын тоо">
-    <button onclick="generateRangeInputs()">Ангиллын талбар үүсгэх</button>
-    <div id="rangeInputs"></div>
+<h3>Жингийн ангиллуудыг үүсгэх</h3>
+<input type="number" id="rangeCount" placeholder="Жингийн ангиллын тоо">
+<button onclick="generateRangeInputs()">Ангиллын талбар үүсгэх</button>
+<div id="rangeInputs"></div>
 
-    <button id="calculateBtn" onclick="generateReceipt()" disabled>Бодох</button>
-    <button onclick="window.print()">Хэвлэх</button>
-    <button onclick="resetForm()">Цэвэрлэх</button>
+<button id="calculateBtn" onclick="generateReceipt()" disabled>Бодох</button>
+<button onclick="window.print()">Хэвлэх</button>
+<button onclick="resetForm()">Цэвэрлэх</button>
+</div>
 
-    <h3>Тусгай төрөл</h3>
-    <button onclick="showSection('dealSection')">!! Үнэ тохиролцсон !!</button>
-    <button onclick="showSection('advanceSection')">!! Урьдчилгаа өгсөн !!</button>
+<div id="resultArea"></div>
 
-    <div id="resultArea"></div>
-  </div>
+<script>
+let ranges = [];
+const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxCnhJhvd9iI9ovIUFkhxIp6-BQg5ZNLo4vg6VYbgpom0I3JzpkaX-8aLnku5TpbhjBBw/exec';
 
-  <!-- Үнэ тохиролцсон хэсэг -->
-  <div class="container hidden" id="dealSection">
-    <h3>Үнэ тохиролцсон</h3>
-    <input type="date" id="dealDate">
-    <input type="text" id="dealHerder" placeholder="Малчны нэр">
-    <input type="text" id="dealPhone" placeholder="Утасны дугаар">
-    <input type="text" id="dealAccount" placeholder="Дансны дугаар">
-    <input type="number" id="dealCount" placeholder="Сарлагны тоо">
-    <input type="number" id="dealTotal" placeholder="Нийт дүн (₮)">
-    <div class="receipt">
-      <h3>Эмээлт Эрдэнэ Трейд ХХК</h3>
-      <p><strong>Огноо:</strong> <span id="dealDateDisplay"></span></p>
-      <p><strong>Малчны нэр:</strong> <span id="dealHerderDisplay"></span></p>
-      <p><strong>Утас:</strong> <span id="dealPhoneDisplay"></span></p>
-      <p><strong>Дансны дугаар:</strong> <span id="dealAccountDisplay"></span></p>
-      <p><strong>Сарлагны тоо:</strong> <span id="dealCountDisplay"></span></p>
-      <p><strong>Нийт дүн:</strong> <span id="dealTotalDisplay"></span> ₮</p>
-      <p><strong>Холбогдох:</strong> Эмээлт Эрдэнэ Трейд, утас: 94020230, 89028230</p>
-    </div>
-    <button onclick="fillDealPrintInfo(); window.print()">Хэвлэх</button>
-    <button onclick="resetForm()">Цэвэрлэх</button>
-  </div>
-
-  <!-- Урьдчилгаа өгсөн хэсэг -->
-  <div class="container hidden" id="advanceSection">
-    <h3>Урьдчилгаа өгсөн</h3>
-    <input type="date" id="advanceDate">
-    <input type="text" id="advancePhone" placeholder="Утасны дугаар">
-    <input type="text" id="advanceAccount" placeholder="Дансны дугаар">
-    <input type="number" id="advanceCount" placeholder="Сарлагны тоо">
-    <input type="number" id="advanceAmount" placeholder="Урьдчилгаа дүн (₮)">
-    <div class="receipt">
-      <h3>Эмээлт Эрдэнэ Трейд ХХК</h3>
-      <p><strong>Огноо:</strong> <span id="advanceDateDisplay"></span></p>
-      <p><strong>Утас:</strong> <span id="advancePhoneDisplay"></span></p>
-      <p><strong>Дансны дугаар:</strong> <span id="advanceAccountDisplay"></span></p>
-      <p><strong>Сарлагны тоо:</strong> <span id="advanceCountDisplay"></span></p>
-      <p><strong>Урьдчилгаа дүн:</strong> <span id="advanceAmountDisplay"></span> ₮</p>
-      <p><strong>Холбогдох:</strong> Эмээлт Эрдэнэ Трейд, утас: 94020230, 89028230</p>
-    </div>
-    <button onclick="fillAdvancePrintInfo(); window.print()">Хэвлэх</button>
-    <button onclick="resetForm()">Цэвэрлэх</button>
-  </div>
-
-  <script>
-    let ranges = [];
-
-    function showSection(id) {
-      document.getElementById('mainForm').classList.add('hidden');
-      document.getElementById('dealSection').classList.add('hidden');
-      document.getElementById('advanceSection').classList.add('hidden');
-      document.getElementById(id).classList.remove('hidden');
-      const today = new Date().toISOString().split('T')[0];
-      if (id === 'dealSection') document.getElementById('dealDate').value = today;
-      if (id === 'advanceSection') document.getElementById('advanceDate').value = today;
-    }
-
-    document.addEventListener("DOMContentLoaded", () => {
-      document.getElementById("date").value = new Date().toISOString().split("T")[0];
-      ['date', 'herder', 'account', 'phone', 'horseCount'].forEach(id => {
-        document.getElementById(id).addEventListener('input', validateForm);
-      });
+document.addEventListener("DOMContentLoaded", () => {
+    document.getElementById("date").value = new Date().toISOString().split("T")[0];
+    ['date','herder','account','phone','horseCount'].forEach(id=>{
+        document.getElementById(id).addEventListener('input',validateForm);
     });
+});
 
-    function generateWeightFields() {
-      const count = parseInt(document.getElementById('horseCount').value);
-      const container = document.getElementById('weightFields');
-      container.innerHTML = '';
-      for (let i = 0; i < count; i++) {
-        const input = document.createElement('input');
-        input.type = 'number';
-        input.placeholder = `${i + 1}-р сарлагийн жин (кг)`;
-        input.className = 'horseWeight';
-        input.addEventListener('input', validateForm);
+function generateWeightFields() {
+    const count = parseInt(document.getElementById('horseCount').value);
+    const container = document.getElementById('weightFields');
+    container.innerHTML='';
+    for(let i=0;i<count;i++){
+        const input=document.createElement('input');
+        input.type='number';
+        input.placeholder=`${i+1}-р сарлагийн жин (кг)`;
+        input.className='horseWeight';
+        input.addEventListener('input',validateForm);
         container.appendChild(input);
-      }
-      validateForm();
     }
+    validateForm();
+}
 
-    function generateRangeInputs() {
-      const count = parseInt(document.getElementById('rangeCount').value);
-      const container = document.getElementById('rangeInputs');
-      container.innerHTML = '';
-      ranges = [];
-      for (let i = 0; i < count; i++) {
-        const div = document.createElement('div');
-        div.innerHTML = `
-          <select id="rangeType-${i}" onchange="toggleEndInput(${i})">
+function generateRangeInputs() {
+    const count=parseInt(document.getElementById('rangeCount').value);
+    const container=document.getElementById('rangeInputs');
+    container.innerHTML='';
+    ranges=[];
+    for(let i=0;i<count;i++){
+        const div=document.createElement('div');
+        div.innerHTML=`
+        <select id="rangeType-${i}" onchange="toggleEndInput(${i})">
             <option value="lt">доош</option>
             <option value="bt">хооронд</option>
             <option value="gt">дээш</option>
-          </select>
-          <input type="number" id="rangeStart-${i}" placeholder="Эхлэх кг">
-          <input type="number" id="rangeEnd-${i}" placeholder="Дуусах кг" style="display:none">
-          <input type="number" id="rangePrice-${i}" placeholder="Үнэ ₮/кг">
+        </select>
+        <input type="number" id="rangeStart-${i}" placeholder="Эхлэх кг">
+        <input type="number" id="rangeEnd-${i}" placeholder="Дуусах кг" style="display:none">
+        <input type="number" id="rangePrice-${i}" placeholder="Үнэ ₮/кг">
         `;
         container.appendChild(div);
-      }
-      validateForm();
     }
+    validateForm();
+}
 
-    function toggleEndInput(i) {
-      const type = document.getElementById(`rangeType-${i}`).value;
-      const endInput = document.getElementById(`rangeEnd-${i}`);
-      endInput.style.display = (type === 'bt') ? 'inline-block' : 'none';
+function toggleEndInput(i){
+    const type=document.getElementById(`rangeType-${i}`).value;
+    const endInput=document.getElementById(`rangeEnd-${i}`);
+    endInput.style.display=(type==='bt')?'inline-block':'none';
+}
+
+function getRanges(){
+    const count=parseInt(document.getElementById('rangeCount').value);
+    const result=[];
+    for(let i=0;i<count;i++){
+        const type=document.getElementById(`rangeType-${i}`).value;
+        const start=parseFloat(document.getElementById(`rangeStart-${i}`).value);
+        const end=parseFloat(document.getElementById(`rangeEnd-${i}`).value);
+        const price=parseFloat(document.getElementById(`rangePrice-${i}`).value);
+        result.push({type,start,end,price});
     }
+    return result;
+}
 
-    function getRanges() {
-      const count = parseInt(document.getElementById('rangeCount').value);
-      const result = [];
-      for (let i = 0; i < count; i++) {
-        const type = document.getElementById(`rangeType-${i}`).value;
-        const start = parseFloat(document.getElementById(`rangeStart-${i}`).value);
-        const end = parseFloat(document.getElementById(`rangeEnd-${i}`).value);
-        const price = parseFloat(document.getElementById(`rangePrice-${i}`).value);
-        result.push({ type, start, end, price });
-      }
-      return result;
-    }
+function validateForm(){
+    const baseFields=['date','herder','account','phone','horseCount'];
+    let valid=baseFields.every(id=>document.getElementById(id).value.trim()!=='');
 
-    function validateForm() {
-      const baseFields = ['date', 'herder', 'account', 'phone', 'horseCount'];
-      let valid = baseFields.every(id => document.getElementById(id).value.trim() !== '');
-      const weights = document.querySelectorAll('.horseWeight');
-      if (weights.length === 0 || Array.from(weights).some(i => i.value.trim() === '')) valid = false;
-      const rangeCount = parseInt(document.getElementById('rangeCount').value);
-      if (!rangeCount || rangeCount < 1) valid = false;
-      document.getElementById('calculateBtn').disabled = !valid;
-    }
+    const weights=document.querySelectorAll('.horseWeight');
+    if(weights.length===0||Array.from(weights).some(i=>i.value.trim()==='')) valid=false;
 
-    function generateReceipt() {
-      const date = document.getElementById('date').value;
-      const herder = document.getElementById('herder').value;
-      const account = document.getElementById('account').value;
-      const phone = document.getElementById('phone').value;
-      const weights = Array.from(document.getElementsByClassName('horseWeight')).map(el => parseFloat(el.value)).filter(w => !isNaN(w));
-      ranges = getRanges();
-      let totalWeight = 0;
-      let totalSum = 0;
-      let details = '';
-      const allWeights = weights.map(w => w.toFixed(2)).join(', ');
+    const rangeCount=parseInt(document.getElementById('rangeCount').value);
+    if(!rangeCount||rangeCount<1) valid=false;
 
-      ranges.forEach(r => {
-        r.total = 0;
-        r.count = 0;
-      });
+    document.getElementById('calculateBtn').disabled=!valid;
+}
 
-      weights.forEach(w => {
-        totalWeight += w;
-        for (const r of ranges) {
-          if ((r.type === 'lt' && w <= r.start) ||
-              (r.type === 'gt' && w >= r.start) ||
-              (r.type === 'bt' && w >= r.start && w <= r.end)) {
-            r.total += w;
-            r.count += 1;
-            totalSum += w * r.price;
-            break;
-          }
+function sendToGoogleSheets(data) {
+    fetch(SCRIPT_URL, {
+        method: 'POST',
+        mode: 'no-cors',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data)
+    })
+    .then(() => console.log('Google Sheets рүү амжилттай илгээгдлээ'))
+    .catch(err => console.error('Google Sheets рүү илгээхэд алдаа гарлаа:', err));
+}
+
+function generateReceipt(){
+    const date=document.getElementById('date').value;
+    const herder=document.getElementById('herder').value;
+    const account=document.getElementById('account').value;
+    const phone=document.getElementById('phone').value;
+    const weights=Array.from(document.getElementsByClassName('horseWeight'))
+                        .map(el=>parseFloat(el.value))
+                        .filter(w=>!isNaN(w));
+    ranges=getRanges();
+    let totalWeight=0;
+    let totalSum=0;
+    let details='';
+    const allWeights=weights.map(w=>w.toFixed(2)).join(', ');
+
+    ranges.forEach(r=>{r.total=0;r.count=0;});
+
+    weights.forEach(w=>{
+        totalWeight+=w;
+        for(const r of ranges){
+            if((r.type==='lt'&&w<=r.start)||(r.type==='gt'&&w>=r.start)||(r.type==='bt'&&w>=r.start&&w<=r.end)){
+                r.total+=w;
+                r.count+=1;
+                totalSum+=w*r.price;
+                break;
+            }
         }
-      });      
+    });
 
-      ranges.forEach((r) => {
-        if (r.count > 0) {
-          let label = r.type === 'lt' ? `${r.start} кг-аас доош`
-                    : r.type === 'gt' ? `${r.start} кг-аас дээш`
-                    : `${r.start}-${r.end} кг`;
-          details += `<p><strong>${label}:</strong> ${r.total.toFixed(2)} кг × ${r.price} ₮ = ${(r.total * r.price).toLocaleString()} ₮ 
-          (<strong>${r.count}</strong> сарлаг)</p>`;
+    ranges.forEach(r=>{
+        if(r.count>0){
+            let label=r.type==='lt'?`${r.start} кг-аас доош`
+                     :r.type==='gt'?`${r.start} кг-аас дээш`
+                     :`${r.start}-${r.end} кг`;
+            details+=`<p><strong>${label}:</strong> ${r.total.toFixed(2)} кг × ${r.price} ₮ = ${(r.total*r.price).toLocaleString()} ₮ (<strong>${r.count}</strong> сарлаг)</p>`;
         }
-      });
+    });
 
-      document.getElementById('resultArea').innerHTML = `
-        <div class="receipt">
-          <h3>Эмээлт Эрдэнэ Трейд ХХК</h3>
-          <p><strong>Огноо:</strong> ${date}</p>
-          <p><strong>Малчны нэр:</strong> ${herder}</p>
-          <p><strong>Дансны дугаар:</strong> ${account}</p>
-          <p><strong>Утасны дугаар:</strong> ${phone}</p>
-          <p><strong>Сарлагны тоо:</strong> ${weights.length}</p>
-          <p><strong>Жинүүд:</strong> ${allWeights} кг</p>
-          ${details}
-          <p><strong>Нийт жин:</strong> ${totalWeight.toFixed(2)} кг</p>
-          <p><strong>Нийт дүн:</strong> ${totalSum.toLocaleString()} ₮</p>
-          <p><strong>Холбогдох:</strong> Эмээлт Эрдэнэ Трейд, утас: 94020230, 89028230</p>
-        </div>
-      `;
-      document.getElementById('resultArea').style.display = 'block';
-    }
+    const receiptHTML = ['Малчинд олгох', 'Компанид үлдэх'].map(title => `
+    <div class="receipt">
+      <h2 style="text-align:center;"><strong>ЭМЭЭЛТ ЭРДЭНЭ ТРЕЙД ХХК</strong></h2>
+      ${title==='Малчинд олгох' ? `
+      <p style="text-align:center;">
+        <strong>Холбогдох утас:</strong> 94020230, 89028230<br>
+        <strong>Facebook Page:</strong> Эмээлт Эрдэнэ Трейд ХХК
+      </p>` : ''}
+      <p style="text-align:center;"><strong>${title}</strong></p>
+      <p><strong>Огноо:</strong> ${date}</p>
+      <p><strong>Малчны нэр:</strong> ${herder}</p>
+      <p><strong>Дансны дугаар:</strong> ${account}</p>
+      <p><strong>Утас:</strong> ${phone}</p>
+      <p><strong>Сарлагны тоо:</strong> ${weights.length}</p>
+      <p><strong>Жингүүд:</strong> ${allWeights} кг</p>
+      ${details}
+      <p><strong>Нийт жин:</strong> ${totalWeight.toFixed(2)} кг</p>
+      <p><strong>Нийт дүн:</strong> ${totalSum.toLocaleString()} ₮</p>
+      <div class="signature">
+        <p>Малчны гарын үсэг: ____________</p>
+        <p>Хүлээн авсан: Эмээлт Эрдэнэ Трейд ХХК</p>
+      </div>
+      <div class="page-break"></div>
+    </div>
+    `).join('');
 
-    function fillDealPrintInfo() {
-      document.getElementById("dealDateDisplay").textContent = document.getElementById("dealDate").value;
-      document.getElementById("dealHerderDisplay").textContent = document.getElementById("dealHerder").value;
-      document.getElementById("dealPhoneDisplay").textContent = document.getElementById("dealPhone").value;
-      document.getElementById("dealAccountDisplay").textContent = document.getElementById("dealAccount").value;
-      document.getElementById("dealCountDisplay").textContent = document.getElementById("dealCount").value;
-      document.getElementById("dealTotalDisplay").textContent = parseFloat(document.getElementById("dealTotal").value).toLocaleString();
-    }
+    document.getElementById('resultArea').innerHTML=receiptHTML;
+    document.getElementById('resultArea').style.display='block';
 
-    function fillAdvancePrintInfo() {
-      document.getElementById("advanceDateDisplay").textContent = document.getElementById("advanceDate").value;
-      document.getElementById("advancePhoneDisplay").textContent = document.getElementById("advancePhone").value;
-      document.getElementById("advanceAccountDisplay").textContent = document.getElementById("advanceAccount").value;
-      document.getElementById("advanceCountDisplay").textContent = document.getElementById("advanceCount").value;
-      document.getElementById("advanceAmountDisplay").textContent = parseFloat(document.getElementById("advanceAmount").value).toLocaleString();
-    }
+    const payload = {
+        date, herder, account, phone,
+        weights: allWeights,
+        count: weights.length,
+        totalWeight: totalWeight.toFixed(2),
+        totalSum: totalSum.toFixed(2),
+        ranges
+    };
 
-    function resetForm() {
-      location.reload();
-    }
-  </script>
+    sendToGoogleSheets(payload);
+}
+
+function resetForm(){ location.reload(); }
+</script>
 </body>
 </html>
